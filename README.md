@@ -10,6 +10,14 @@ conda env create -f ChameleolyserEnvironment.yml
 conda activate Chameleolyser
 ```
 
+Download reference genome, extract it and index it:
+```
+  wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+  gunzip https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+
+  bwa index GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fnaz
+  samtools faidx GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna
+```
 # Usage
 ## Prepare BED
 The prepareBED function will download all necessary BED files. The working directory is the directory in which all intermediate and result files will be written. Choose an existing directory for this. The PREFIX option can be used to indicate whether or not the names of the chromosomes start with 'chr' (i.e. NCBI reference genome) in the reference sequence that was used to generate your input CRAM/BAM. The prepareBED function only need to be run once (also in case multiple samples are analysed in the same working directory). The OMIM option can be used if only known disease genes need to be analysed. This step takes less than a minute and only needs to run once if you for example want to analyse a batch of samples.

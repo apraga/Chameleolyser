@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use List::Util qw(min max);
+use File::Basename;
 
 ##################################################################################################
 ##################################################################################################
@@ -43,6 +44,7 @@ my 	$OMIM											= "";
 my 	$SAMPLE_NAME									= "";
 my 	$ALIGNMENT_FP									= "";
 my	$NR_OF_THREADS									= 1;
+my $GENOME = "";
 
 ######################################################
 ### 				PROGRAM OPTIONS		   	   	   ###
@@ -63,14 +65,12 @@ my 	$FilterRawVariants								= 0;
 
 GetOptions ("WORKING_DIR=s"							=>	\$WORKING_DIR,
 			"PREFIX=s"								=>	\$PREFIX,
-			"OMIM=s"								=>	\$OMIM,
+			"GENOME=s" => \$GENOME,
 			"SAMPLE_NAME=s"							=>	\$SAMPLE_NAME,
-			"ALIGNMENT_FP=s"						=>	\$ALIGNMENT_FP,
-			"NR_OF_THREADS=i"						=>	\$NR_OF_THREADS,
+      "ALIGNMENT_FP=s"    =>      \$ALIGNMENT_FP,
+      "NR_OF_THREADS=i" =>      \$NR_OF_THREADS,
 			"PrepareBED"							=>	\$PrepareBED,
-			"MaskReferenceGenome"					=>	\$MaskReferenceGenome,
-			"GenerateMaskedAlignmentAndVcf"			=>	\$GenerateMaskedAlignmentAndVcf,
-			"FilterRawVariants"						=>	\$FilterRawVariants);
+			"MaskReferenceGenome"					=>	\$MaskReferenceGenome);
 
 ##################################################################################################
 ##################################################################################################
@@ -80,13 +80,9 @@ GetOptions ("WORKING_DIR=s"							=>	\$WORKING_DIR,
 ##################################################################################################
 ##################################################################################################
 
-PrepareBED									($WORKING_DIR,
-											 $PREFIX,
-											 $OMIM) 							if $PrepareBED;
+PrepareBED									($WORKING_DIR) 							if $PrepareBED;
 
-MaskReferenceGenome 						($WORKING_DIR,
-											 $PREFIX,
-											 $OMIM) 							if $MaskReferenceGenome;
+MaskReferenceGenome 						($WORKING_DIR, $GENOME) 							if $MaskReferenceGenome;
 											 
 GenerateMaskedAlignmentAndVcf				($WORKING_DIR,
 											 $PREFIX,
@@ -210,18 +206,11 @@ sub PrepareBED {
 }
 
 sub MaskReferenceGenome {
-	
 	(my $WORKING_DIR,
-	 my $PREFIX,
-	 my $OMIM)
+		my $GENOME)
 	= @_;
 	
 	# find Picard
-	
-	my 	$PicardJarPath = `which picard`;
-		$PicardJarPath =~ s/\n//g;
-		$PicardJarPath =~ s/bin\/.*$/bin\//g;
-		$PicardJarPath .= "../share/picard-2.20.8-0/picard.jar";
 	
 	# test if working directory exists
 	
@@ -232,77 +221,36 @@ sub MaskReferenceGenome {
 	}
 	
 	# make new subdirs
-	
-	unless(-d "$WORKING_DIR/REF/"){system("mkdir $WORKING_DIR/REF/");}
-		
-	# download RefSeq #
-	
-	chdir	("$WORKING_DIR/REF/");
-	
-	if ($PREFIX eq "chr"){
-		
-		if ($OMIM eq "yes"){
-		
-			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
-			system 	("bwa index hg19.chr.fa");
-			system 	("samtools faidx hg19.chr.fa");
-			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
-			system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.omim.noalt.chr.bed -fo hg19.masked.chr.fa");
-			system 	("bwa index hg19.masked.chr.fa");
-			system 	("samtools faidx hg19.masked.chr.fa");	
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
-		}
-		else {
-			
-			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
-			system 	("bwa index hg19.chr.fa");
-			system 	("samtools faidx hg19.chr.fa");
-			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
-			system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.noalt.chr.bed -fo hg19.masked.chr.fa");
-			system 	("bwa index hg19.masked.chr.fa");
-			system 	("samtools faidx hg19.masked.chr.fa");	
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
-		}
+
+	my $REF = "$WORKING_DIR/REF";
+	unless(-d $REF){system("mkdir $REF");}
+
+	if ($GENOME eq "")	 {
+		print "--GENOME not set \n";
+		print "Please download it, unzip and index it (see README)\n";
+		die("$!\n");
 	}
-	else {
-		
-		if ($OMIM eq "yes"){
-		
-			system	("wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz");
-			system 	("gunzip human_g1k_v37.fasta.gz");
-			system	("mv human_g1k_v37.fasta hg19.fa");
-			system 	("bwa index hg19.fa");
-			system 	("samtools faidx hg19.fa");	
-			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.fa.fai > hg19.txt");
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.fa OUTPUT=hg19.dict");
-			system 	("bedtools maskfasta -fi hg19.fa -bed ../BED/All.formasking.omim.noalt.bed -fo hg19.masked.fa");
-			system 	("bwa index hg19.masked.fa");
-			system 	("samtools faidx hg19.masked.fa");	
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.fa OUTPUT=hg19.masked.dict");
-		}
-		else {
-			
-			system	("wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz");
-			system 	("gunzip human_g1k_v37.fasta.gz");
-			system	("mv human_g1k_v37.fasta hg19.fa");
-			system 	("bwa index hg19.fa");
-			system 	("samtools faidx hg19.fa");	
-			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.fa.fai > hg19.txt");
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.fa OUTPUT=hg19.dict");
-			system 	("bedtools maskfasta -fi hg19.fa -bed ../BED/All.formasking.noalt.bed -fo hg19.masked.fa");
-			system 	("bwa index hg19.masked.fa");
-			system 	("samtools faidx hg19.masked.fa");	
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.fa OUTPUT=hg19.masked.dict");
-		}
+	if (! -f $GENOME )	 {
+		print "--GENOME doest not point to a file \n";
+		die("$!\n");
 	}
+	if (! -f "$GENOME.fai" )	 {
+		print("Missing index file for genome $GENOME.fai\n" );
+		die("$!\n");
+	}
+	my($STEM, $dirs, $suffix) = fileparse($GENOME);
+
+	my $STEM = basename($GENOME,  ".fna");
+	my $MASKED = "$STEM.masked.fna";
 	
-	print "Masking Ready!\n";
+	# Output is in REF
+	system	("awk -v OFS='\t' {'print \$1,\$2'} $GENOME.fai > $REF/$STEM.txt");
+	system	("picard CreateSequenceDictionary REFERENCE=$GENOME OUTPUT=$REF/$STEM.dict");
+	system 	("bedtools maskfasta -fi $GENOME -bed BED/All.formasking.bed -fo $REF/$MASKED");
+	system 	("bwa index $REF/$MASKED");
+	system 	("samtools faidx $REF/$MASKED");	
+	system	("picard CreateSequenceDictionary REFERENCE=$REF/$MASKED OUTPUT=$REF/$MASKED.dict");
+	print "Masking Ready in $REF!\n";
 }
 
 sub GenerateMaskedAlignmentAndVcf {

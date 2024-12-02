@@ -1,0 +1,7 @@
+work
+*.bed
+BED/
+*.fna
+*.fna.*
+
+*.gz
