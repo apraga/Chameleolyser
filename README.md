@@ -10,13 +10,15 @@ conda env create -f ChameleolyserEnvironment.yml
 conda activate Chameleolyser
 ```
 
-Download reference genome, extract it and index it:
+Download reference genome, extract it, rename chromosome and index it:
 ```
   wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
   gunzip https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
 
+  bash rename_chr.sh
   bwa index GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fnaz
   samtools faidx GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna
+  picard CreateSequenceDictionary REFERENCE=GCF_000001405.40_GRCh38.p14_genomic.fna OUTPUT=GCF_000001405.40_GRCh38.p14_genomic.dict
 ```
 # Usage
 ## Prepare BED
@@ -52,7 +54,7 @@ wget ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/
 ```
 
 ## Prepare BED
-Since the 1000 genomes reference sequence is used to align the HG002 reads (thus no 'chr' prefix in the chromosome names), we run the following command. The working directory needs to be the full path of an existing directory on your system. 
+Since the 1000 genomes reference sequence is used to align the HG002 reads (thus no 'chr' prefix in the chromosome names), we run the following command. The working directory needs to be the full path of an existing directory on your system.
 
 ```
 perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --OMIM=yes
@@ -82,18 +84,3 @@ The filtered variant lists that should result from this operation can be found i
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
 
 Copyright (c) 2023 Wouter Steyaert
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
