@@ -229,12 +229,12 @@ sub MaskReferenceGenome {
 	unless(-d $REF){system("mkdir $REF");}
 
 	my $RefGenome =  "$REF/$GENOME";
-	if (-f $RefGenome)	 {
-		print "$REF/$GENOME is not a file\n";
+	if (! -f $RefGenome)	 {
+		print "$RefGenome is not a file\n";
 		print "Please download it, unzip and index it (see README)\n";
 		die("$!\n");
 	}
-	if (-f "$RefGenome.fai")	 {
+	if (! -f "$RefGenome.fai")	 {
 		print("Missing index file $RefGenome.fai\n" );
 		die("$!\n");
 	}
@@ -248,7 +248,7 @@ sub MaskReferenceGenome {
 	system 	("bedtools maskfasta -fi $RefGenome -bed BED/All.formasking.bed -fo $REF/$MASKED");
 	system 	("bwa index $REF/$MASKED");
 	system 	("samtools faidx $REF/$MASKED");
-	system	("picard CreateSequenceDictionary REFERENCE=$REF/$MASKED OUTPUT=$REF/$MASKED.dict");
+	system	("picard CreateSequenceDictionary REFERENCE=$REF/$MASKED OUTPUT=$REF/$STEM.masked.dict");
 	print "Masking Ready in $REF!\n";
 }
 
@@ -322,6 +322,7 @@ sub GenerateMaskedAlignmentAndVcf {
 	system	("tabix -p vcf $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf.gz");
 	system	("rm -f $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf");
 	system	("gatk --java-options \-Xmx4g\ HaplotypeCaller -R $RefGenome -I $SAMPLE_NAME.ori.sorted.remdup.bam -O $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf -L $VarCallBedFP --annotation MappingQualityRankSumTest --annotation MappingQualityZero --annotation QualByDepth --annotation ReadPosRankSumTest --annotation RMSMappingQuality --annotation BaseQualityRankSumTest --annotation FisherStrand --annotation MappingQuality --annotation DepthPerAlleleBySample");
+	print "gatk --java-options \-Xmx4g\ HaplotypeCaller -R $RefGenome -I $SAMPLE_NAME.ori.sorted.remdup.bam -O $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf -L $VarCallBedFP --annotation MappingQualityRankSumTest --annotation MappingQualityZero --annotation QualByDepth --annotation ReadPosRankSumTest --annotation RMSMappingQuality --annotation BaseQualityRankSumTest --annotation FisherStrand --annotation MappingQuality --annotation DepthPerAlleleBySample\n";
 
 	system	("bgzip -c $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf > $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf.gz");
 	system	("tabix -p vcf $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf.gz");
@@ -349,7 +350,7 @@ sub GenerateMaskedAlignmentAndVcf {
 	system	("rm -f $SAMPLE_NAME.rep.1.fastq.gz");
 	system	("rm -f $SAMPLE_NAME.rep.2.fastq.gz");
 
-	system	("rm -f $SAMPLE_NAME.masked.sam");
+    system	("rm -f $SAMPLE_NAME.masked.sam");
 	system	("rm -f $SAMPLE_NAME.masked.bam");
 
 	system	("java -Xmx8G -jar $PicardJarPath MarkDuplicates I=$SAMPLE_NAME.masked.sorted.bam O=$SAMPLE_NAME.masked.sorted.remdup.bam M=$SAMPLE_NAME.masked.sorted.remdup.met REMOVE_DUPLICATES=true");
@@ -357,8 +358,7 @@ sub GenerateMaskedAlignmentAndVcf {
 	system	("rm -f $SAMPLE_NAME.masked.sorted.bam");
 
 	system	("lofreq  indelqual --dindel -f $MaskedRefGenome -o $SAMPLE_NAME.masked.sorted.remdup.bqsr.bam $SAMPLE_NAME.masked.sorted.remdup.bam");
-
-
+	print "lofreq  indelqual --dindel -f $MaskedRefGenome -o $SAMPLE_NAME.masked.sorted.remdup.bqsr.bam $SAMPLE_NAME.masked.sorted.remdup.bam \n";
 
 	system	("rm -f $SAMPLE_NAME.masked.sorted.remdup.bam");
 	system	("samtools index $SAMPLE_NAME.masked.sorted.remdup.bqsr.bam");
