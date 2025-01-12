@@ -414,7 +414,7 @@ sub FilterRawVariants {
 	my %SDsVAR 							= ();
 	my @VCFs							= ( "$SAMPLE_NAME.masked.sorted.remdup.bqsr.rg.lofreq.vcf.gz",
 											"$SAMPLE_NAME.ori.sorted.remdup.gatk.vcf.gz");
-	my $CovFilePath						= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.masked.sorted.remdup.bqsr.rg.cov.gz";
+	my $CovFilePath						= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.masked.sorted.remdup.bqsr.rg.cov.gz";
 	my %LoFreq_Variants					= ();
 	my %GATK_Variants					= ();
 	my %PosOfInterest					= ();
@@ -643,11 +643,17 @@ sub FilterRawVariants {
 
 			my $CovPos = $Start + $PosInInt;
 
+			my $tmp = $CoordinateMappings{"$Chrom\~$CovPos"};
+			#if ($Chrom eq "chr20" && defined($tmp)) {
+   # 			print " pos for correction at $Chrom  $CovPos : cov = $Cov ; mapping ? $tmp \n";
+			#}
 			next if (!exists $CoordinateMappings{"$Chrom\~$CovPos"});
+			#print " coverage " , $Cov,  "\n";
 
 			if ($Cov >= 60){
 
 				$Coverage{$Chrom}{$CovPos} = $Cov;
+				#print "cov > 60 ", $Coverage{$Chrom}{$CovPos} = $Cov, "\n";
 
 				if (	exists $LoFreq_Variants{$Chrom}						&&
 						exists $LoFreq_Variants{$Chrom}{$CovPos}){
@@ -699,6 +705,7 @@ sub FilterRawVariants {
 				if (!exists $Coverage{$Chrom}{$Start}){
 
 					delete($LoFreq_Variants{$Chrom}{$Start});
+					#print "deleting ", delete($LoFreq_Variants{$Chrom}{$Start}), "\n";
 
 					foreach my $HomoloCoord (keys %{$CoordinateMappings{"$Chrom\~$Start"}}){
 
@@ -707,6 +714,7 @@ sub FilterRawVariants {
 						if ($LoFreq_Variants{$HomChrom}{$HomPos}){
 
 							delete($LoFreq_Variants{$HomChrom}{$HomPos});
+							#print "deleting2 ", delete($LoFreq_Variants{$HomChrom}{$HomPos}), "\n";
 						}
 					}
 				}
@@ -727,7 +735,7 @@ sub FilterRawVariants {
 
 			foreach my $Variant (sort keys %{$LoFreq_Variants{$Chrom}{$Pos}}){
 
-				#print $Variant . "\n";
+				print $Variant . "\n";
 
 				(my $ToMapOnChrom, my $ToMapOnStart, my $ToMapOnEnd, my $Change) = split (m/~/, $Variant);
 				(my $RefNucl, my $AltNucl) 		= split(m/\//, $Change);
