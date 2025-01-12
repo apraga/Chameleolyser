@@ -403,12 +403,12 @@ sub FilterRawVariants {
 	my $CohortAF_FP						= "";
 
 	my $RegionToStrandsFP				= "$WORKING_DIR\/BED/RegionID_ToStrand.txt";
-	my $VariantsOutFP					= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.RawSNVs.txt";
-	my $VariantsFilter1OutFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.txt";
-	my $VariantsFilter2OutFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter2SNVs.txt";
-	my $VariantsFilter1BedFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.bed";
-	my $SortedVariantsFilter1BedFP		= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.sorted.bed";
-	my $VariantsFilter1HpAnnoBedFP		= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.HpAnno.bed";
+	my $VariantsOutFP					= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.RawSNVs.txt";
+	my $VariantsFilter1OutFP			= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.txt";
+	my $VariantsFilter2OutFP			= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter2SNVs.txt";
+	my $VariantsFilter1BedFP			= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.bed";
+	my $SortedVariantsFilter1BedFP		= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.sorted.bed";
+	my $VariantsFilter1HpAnnoBedFP		= $WORKING_DIR . "/RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.HpAnno.bed";
 	my $FileHandle						= new IO::Zlib;
 	my %SDsBED 							= ();
 	my %SDsVAR 							= ();
@@ -428,28 +428,16 @@ sub FilterRawVariants {
 	my %SDtroublePos					= ();
 	my %PopFreq							= ();
 
-	if ($PREFIX eq "chr"){
 
-		$SDsBedFP						= "$WORKING_DIR/BED/AllSDs.noalt.chr.bed";
-		$AllToMapOnToOtherFP			= "$WORKING_DIR\/BED/AllToMapOnToOther.chr.txt.gz";
-		$MappedSDsFP					= "$WORKING_DIR\/BED/MappedSDs.chr.txt";
-		$PositionToRegionFP				= "$WORKING_DIR\/BED/PosToRegionID.chr.txt.gz";
+	$SDsBedFP						= "$WORKING_DIR/BED/AllSDs.bed";
+	$AllToMapOnToOtherFP			= "$WORKING_DIR\/BED/_AllToMapOnToOther.txt";
+	$MappedSDsFP					= "$WORKING_DIR\/BED/_MappedSDs.txt";
+	$PositionToRegionFP				= "$WORKING_DIR\/BED/_PosToRegionID.txt";
 
-		$HPsBedFP						= "$WORKING_DIR\/BED/HPs.noalt.chr.bed";
-		$TroubleSitesFP					= "$WORKING_DIR\/BED/SitesToExclude.noalt.chr.bed";
-		$CohortAF_FP					= "$WORKING_DIR\/BED/CohortAlleleFreq.chr.txt";
-	}
-	else {
-
-		$SDsBedFP						= "$WORKING_DIR/BED/AllSDs.noalt.bed";
-		$AllToMapOnToOtherFP			= "$WORKING_DIR\/BED/AllToMapOnToOther.txt.gz";
-		$MappedSDsFP					= "$WORKING_DIR\/BED/MappedSDs.txt";
-		$PositionToRegionFP				= "$WORKING_DIR\/BED/PosToRegionID.txt.gz";
-
-		$HPsBedFP						= "$WORKING_DIR\/BED/HPs.noalt.bed";
-		$TroubleSitesFP					= "$WORKING_DIR\/BED/SitesToExclude.noalt.bed";
-		$CohortAF_FP					= "$WORKING_DIR\/BED/CohortAlleleFreq.txt";
-	}
+	$HPsBedFP						= "$WORKING_DIR\/BED/HPs.bed";
+	$TroubleSitesFP					= "$WORKING_DIR\/BED/RegionsToExclude.sorted.uniq.bed";
+	# FIXME
+	#$CohortAF_FP					= "$WORKING_DIR\/BED/CohortAlleleFreq.chr.txt";
 
 	# Read in SDs #
 
@@ -905,16 +893,17 @@ sub FilterRawVariants {
 
 	# Population frequency #
 
-	open P, "$CohortAF_FP" or die ("Can't open $CohortAF_FP");
-	while(<P>){
+	print "No CohortAF file !\n";
+	#open P, "$CohortAF_FP" or die ("Can't open $CohortAF_FP");
+	#while(<P>){
 
-		$_ =~ s/\n//g;
+	#	$_ =~ s/\n//g;
 
-		(my $Variation, my $Frequency) = split(m/\t/, $_);
+	#	(my $Variation, my $Frequency) = split(m/\t/, $_);
 
-		$PopFreq{$Variation} = $Frequency;
-	}
-	close P;
+	#	$PopFreq{$Variation} = $Frequency;
+	#}
+	#close P;
 
 	# Write out F2 variants #
 
