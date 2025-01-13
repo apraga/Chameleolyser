@@ -3,5 +3,18 @@ work
 BED/
 *.fna
 *.fna.*
+*.fastq
 
 *.gz
+GCA*
+GCF*
+work/
+
+*.vcf*
+*.bam*
+*egg-info*
+*.out
+*.json
+*.csv
+*.slurm
+*.*~
