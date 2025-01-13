@@ -2,3 +2,7 @@ BED/
 GCA*
 GCF*
 work/
+
+*.vcf*
+*.bam*
+*egg-info*
