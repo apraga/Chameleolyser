@@ -11,15 +11,23 @@ conda activate Chameleolyser
 ```
 
 # Usage
-## Prepare BED
-The prepareBED function will download all necessary BED files. The working directory is the directory in which all intermediate and result files will be written. Choose an existing directory for this. The PREFIX option can be used to indicate whether or not the names of the chromosomes start with 'chr' (i.e. NCBI reference genome) in the reference sequence that was used to generate your input CRAM/BAM. The prepareBED function only need to be run once (also in case multiple samples are analysed in the same working directory). The OMIM option can be used if only known disease genes need to be analysed. This step takes less than a minute and only needs to run once if you for example want to analyse a batch of samples.
-```
-perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --OMIM=yes
-```
 ## Mask reference genome
-The MaskReferenceGenome function will download a copy of the hg19 reference genome. After completion, it will create a masked version of it. This option only need to be run once (also in case multiple samples are analysed in the same working directory). This step might take up to 90 minutes but only needs to be run once in case you wish to analyse multiple samples.
+
+
+Download reference genome, extract it:
 ```
-perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --OMIM=yes
+
+wget
+https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.gz
+gunzip GCA_000001405.15_GRCh38_full_analysis_set.fna.gz
+
+ wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.faitxb
+
+
+```
+The MaskReferenceGenome function will create a masked version of it. This option only need to be run once (also in case multiple samples are analysed in the same working directory). This step might take up to 90 minutes but only needs to be run once in case you wish to analyse multiple samples.
+```
+perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=work/
 ```
 
 ## Generate masked alignments and raw VCF
@@ -44,7 +52,7 @@ wget ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/
 ```
 
 ## Prepare BED
-Since the 1000 genomes reference sequence is used to align the HG002 reads (thus no 'chr' prefix in the chromosome names), we run the following command. The working directory needs to be the full path of an existing directory on your system. 
+Since the 1000 genomes reference sequence is used to align the HG002 reads (thus no 'chr' prefix in the chromosome names), we run the following command. The working directory needs to be the full path of an existing directory on your system.
 
 ```
 perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --OMIM=yes
@@ -74,18 +82,3 @@ The filtered variant lists that should result from this operation can be found i
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
 
 Copyright (c) 2023 Wouter Steyaert
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
