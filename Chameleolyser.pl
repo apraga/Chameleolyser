@@ -1206,7 +1206,7 @@ sub ConstructOtherVariant {
 		 
 		 #print \t .  $OtherRegionName . \t . $StrandsRef->{$ToMapOnRegionName} . \n;
 		
-		### CHECK WHETHER OR NOT THERE IS AN OVERLAPPING SD ###
+		### CHECK WHER OR NOT THERE IS AN OVERLAPPING SD ###
 		### FUNCTION NOT ADOPTED FOR INDELS ###
 		 
 		if (exists $SDsRef->{$ToMapOnChrom}{$ToMapOnStart}){
