@@ -5,5 +5,4 @@ work/
 
 *.vcf*
 *.bam*
-*egg-info
-*
+*egg-info*
