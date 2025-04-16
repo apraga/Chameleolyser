@@ -9,7 +9,8 @@ import vcfpy
 import re
 import argparse
 
-def parse_variant(variant_str: str, info) -> vcfpy.Record:
+
+def parse_variant(variant_str: str, info, dp: float) -> vcfpy.Record:
     """Parse a variant string in the format chr~pos~end~ref/alt."""
     parts = variant_str.split('~')
     chrom = parts[0]
@@ -20,7 +21,10 @@ def parse_variant(variant_str: str, info) -> vcfpy.Record:
     # If ref is empty, use N as placeholder (VCF requires a reference base)
     ref = 'N' if ref_alt[0] == '-' else ref_alt[0]
     alt = ref_alt[1]
-    
+
+    vaf = float(info['AF'])
+    sample = {'GT': genotype(vaf), 'DP': dp}
+
     # For substitutions and insertions
     alt_objs = [vcfpy.Substitution("SNV", alt)]
     if alt == '-':
@@ -37,8 +41,8 @@ def parse_variant(variant_str: str, info) -> vcfpy.Record:
         QUAL=None,
         FILTER=['PASS'],
         INFO=info,
-        # FORMAT=['GT'],
-        # calls=[vcfpy.Call('SAMPLE', {'GT': vcfpy.GenotypeType('0/1')})]
+        FORMAT=['GT', 'DP'],
+        calls=[vcfpy.Call('Chameleolyzer', data=sample)]
     )
 
 def get_fields(line):
@@ -49,7 +53,7 @@ def get_fields(line):
 
     fields = line.split()
     if len(fields) < 6:
-        sys.stderr.write(f"Line {line_num}: Skipping malformed line: {line}\n")
+        sys.stderr.write(f"Skipping malformed line: {line}\n")
         return None
 
     if fields[0] == "Chromosome":
@@ -57,10 +61,14 @@ def get_fields(line):
         return None
     return fields
 
+def genotype(vaf: float) -> str:
+    return "1/1" if vaf > 0.8 else "0/1"
+        
 def candidate_records(line: str):
     """ List of candidate from text file
     Format :
-    Chromosome	Start	VAP	VariantCall	VAF_Masked	MaskedCov	PopFreq
+    Chromosome	Star 
+            print(f"  Writing record: {records[0]}")t	VAP	VariantCall	VAF_Masked	MaskedCov	PopFreq
     with Variant=chr10~100348079~100348078~-/ACC	
     """
     fields = get_fields(line)
@@ -69,56 +77,35 @@ def candidate_records(line: str):
 
     info = {
         'AF': fields[4],
-        'DP': fields[5],
         # Keep track those variants are 2 candidates for the same variant
         'Pseudogene': f"{fields[0]}-{fields[1]}"
     }
-    # Parse both variants
-    var1 = parse_variant(fields[2], info)
-    var2 = parse_variant(fields[3], info)
 
-    # Check if variants are identical
+    # Parse both variants
+    var1 = parse_variant(fields[2], info, fields[5])
+    var2 = parse_variant(fields[3], info, fields[5])
+
     records = [var1 ]
-    if var1 != var2:
+    # Don't compare records as it recurses infinitively
+    if fields[2] != fields[3]: 
         records += [ var2 ]
-        # # Handle ALT field
-        # if var1['alt']:
-        #     alt = [vcfpy.Substitution(var1['alt'])]
-        # else:
-        #     # For deletions, use <DEL> symbolic allele
-        #     alt = [vcfpy.SymbolicAllele('<DEL>')]
-        # 
-       # 
-        # # Add the second variant as an INFO field if they're different
-        # if not are_identical:
-        #     var2_info = f"{var2['chrom']}:{var2['pos']}:{var2['ref'] or '-'}:{var2['alt'] or '-'}"
-        #     info['PseudogeneCandidate'] = var2_info
-        # 
-        # # Create a VCF record
-        #
     return records
 
 def convert_to_vcf(input_file, output_file):
     """Convert the input format to VCF format."""
     # Read header from file
-    # Open input, add FILTER header, and open output file
-    reader = vcfpy.Reader.from_path('template.vcf')
-    reader.header.add_filter_line(vcfpy.OrderedDict([
-        ('ID', 'DP10'), ('Description', 'total DP < 10')]))
-    
-    # Initialize VCF writer
-    writer = vcfpy.Writer.from_path(output_file, reader.header)
-    
-    # Process input file
-    with open(input_file, 'r') as f:
-        for line in f:
-            records = candidate_records(line)
-            if not records :
-                continue
-            print(records)
-            writer.write_record(records[0])
-    
-    writer.close()
+    header = vcfpy.Reader.from_path('template.vcf').header
+    # Adding sample is important for hap.py
+    header.samples = vcfpy.SamplesInfos(["Chameleolyzer"])
+    with vcfpy.Writer.from_path(output_file, header) as writer:
+        with open(input_file, 'r') as f:
+            for line in f:
+                records = candidate_records(line)
+                if not records :
+                    continue 
+                writer.write_record(records[0])
+
+    print(f"Wrote {output_file}")
 
 def main():
     parser = argparse.ArgumentParser(
