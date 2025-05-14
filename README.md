@@ -10,26 +10,24 @@ conda env create -f ChameleolyserEnvironment.yml
 conda activate Chameleolyser
 ```
 
-Download reference genome, extract it, rename chromosome and index it:
-```
-  wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
-  gunzip https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
-
-  bash rename_chr.sh
-  bwa index GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fnaz
-  samtools faidx GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna
-  picard CreateSequenceDictionary REFERENCE=GCF_000001405.40_GRCh38.p14_genomic.fna OUTPUT=GCF_000001405.40_GRCh38.p14_genomic.dict
-```
 # Usage
-## Prepare BED
-The prepareBED function will download all necessary BED files. The working directory is the directory in which all intermediate and result files will be written. Choose an existing directory for this. The PREFIX option can be used to indicate whether or not the names of the chromosomes start with 'chr' (i.e. NCBI reference genome) in the reference sequence that was used to generate your input CRAM/BAM. The prepareBED function only need to be run once (also in case multiple samples are analysed in the same working directory). The OMIM option can be used if only known disease genes need to be analysed. This step takes less than a minute and only needs to run once if you for example want to analyse a batch of samples.
-```
-perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --OMIM=yes
-```
 ## Mask reference genome
-The MaskReferenceGenome function will download a copy of the hg19 reference genome. After completion, it will create a masked version of it. This option only need to be run once (also in case multiple samples are analysed in the same working directory). This step might take up to 90 minutes but only needs to be run once in case you wish to analyse multiple samples.
+
+
+Download reference genome, extract it:
 ```
-perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --OMIM=yes
+
+wget
+https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.gz
+gunzip GCA_000001405.15_GRCh38_full_analysis_set.fna.gz
+
+ wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.faitxb
+
+
+```
+The MaskReferenceGenome function will create a masked version of it. This option only need to be run once (also in case multiple samples are analysed in the same working directory). This step might take up to 90 minutes but only needs to be run once in case you wish to analyse multiple samples.
+```
+perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=work/
 ```
 
 ## Generate masked alignments and raw VCF
