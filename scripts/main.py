@@ -20,18 +20,17 @@ def parse_variant(variant_str: str, info, dp: float, fasta) -> vcfpy.Record:
     # Handle the ref/alt part
     ref_alt = parts[3].split('/')
 
-    if pos == 1455700:
-        print(parts)
-        print(chrom)
-        print(fasta[chrom][pos-1:pos+1])
+
     if ref_alt[1] == '-':
         # Deletion
+
         pos = pos - 1
         prev = fasta[chrom][pos-1]
         ref = str(prev) + ref_alt[0]
         alt = prev
+     
 
-        alt_objs = [vcfpy.Substitution("DEL", [])]
+        alt_objs = [vcfpy.Substitution("DEL", str(alt))]
         # Insertion
     elif ref_alt[0] == '-':
         pos = pos - 1
@@ -146,8 +145,8 @@ def main():
     convert_to_vcf(args.input_file, "tmp.vcf", args.fasta)
     print("Sorting file")
     subprocess.run(["bcftools", "sort", "tmp.vcf", "-o", args.output_file])
-    # print("Checking output...")
-    # subprocess.run(["vcfcheck", args.output_file, "-f", args.fasta])
+    print("Checking output...")
+    subprocess.run(["vcfcheck", args.output_file, "-f", args.fasta])
     #
 if __name__ == '__main__':
     main()

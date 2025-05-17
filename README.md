@@ -21,10 +21,9 @@ wget
 https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.gz
 gunzip GCA_000001405.15_GRCh38_full_analysis_set.fna.gz
 
- wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.faitxb
-
-
+ wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.26_GRCh38/GRCh38_major_release_seqs_for_alignment_pipelines/GCA_000001405.15_GRCh38_full_analysis_set.fna.fai
 ```
+
 The MaskReferenceGenome function will create a masked version of it. This option only need to be run once (also in case multiple samples are analysed in the same working directory). This step might take up to 90 minutes but only needs to be run once in case you wish to analyse multiple samples.
 ```
 perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=work/
@@ -32,15 +31,19 @@ perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=work/
 
 ## Generate masked alignments and raw VCF
 This function will extract reads in the homologous regions and re-align them to the masked reference sequence. Subsequently it will call variants with a sensitive method. The sample name is an identifier of choice. The alignment filepath is the full path of the CRAM/BAM file of your sample of interest which is stored on your machine.
+Here is an example
 
 ```
-perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --SAMPLE_NAME=<SAMPLE_NAME> --ALIGNMENT_FP=<ALIGNMENT_FP> --NR_OF_THREADS=<NR_OF_THREADS> --OMIM=yes
+
+perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=/Work/Users/apraga/Chameleolyser/work/  --SAMPLE_NAME=HG002-retest --ALIGNMENT_FP=/Work/Users/apraga/Chameleolyser/151002_7001448_0359_AC7F6GANXX_Sample_HG002-EEogPU_v02-KIT-Av5_AGATGTAC_L008.posiSrt.markDup_GRCh38_tagged.bam
 ```
 ## Filter raw variants
 
 ```
-perl Chameleolyser.pl --FilterRawVariants --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --SAMPLE_NAME=<SAMPLE_NAME> --OMIM=yes
+perl Chameleolyser.pl --WORKING_DIR=/Work/Users/apraga/Chameleolyser/work  --FilterRawVariants --SAMPLE_NAME=HG002-retest
 ```
+
+This will result in variant in text format where each variant can also be on an alternate positions, for example ` work/RAW/HG002-retest-save/HG002-retest.Filter2SNVs.txt`
 
 # Demo
 ## Download public exome sample
