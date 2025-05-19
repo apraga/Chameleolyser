@@ -138,15 +138,13 @@ def main():
     )
     parser.add_argument('input_file', help='Input text file')
     parser.add_argument('output_file', help='Output VCF file')
-    parser.add_argument('fasta', help='FASTA')
-
+    parser.add_argument('-f', '--fasta', help='FASTA')
     args = parser.parse_args()
 
     convert_to_vcf(args.input_file, "tmp.vcf", args.fasta)
     print("Sorting file")
     subprocess.run(["bcftools", "sort", "tmp.vcf", "-o", args.output_file])
-    print("Checking output with happy vcf check...")
-    subprocess.run(["vcfcheck", args.output_file, "--check-bcf-errors", "1"])
+#    subprocess.run(["vcfcheck", args.output_file, "--check-bcf-errors", "1"])
     #subprocess.run(["vcfcheck", args.output_file, "-f", args.fasta]) # vcflib
 if __name__ == '__main__':
     main()
